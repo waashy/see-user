@@ -4,6 +4,7 @@ import (
 	log "log/slog"
 
 	config "github.com/waashy/see-user/app/model/config"
+	userdao "github.com/waashy/see-user/database/dao/user"
 	"github.com/waashy/utils/config/parser"
 	database "github.com/waashy/utils/database"
 	dbConfig "github.com/waashy/utils/database/config"
@@ -45,5 +46,10 @@ func main() {
 		return
 	}
 	logger.Info("Database connection established")
+
+	logger.Info("Database connection established")
+	logger.Info("initiating user dao")
+
+	userDao := userdao.NewUserDao(db)
 
 }
