@@ -23,21 +23,26 @@ var (
 )
 
 func init() {
-	log.Info("See-User service initiating")
+
+	initLogger := log.New(log.NewJSONHandler(os.Stdout, &log.HandlerOptions{
+		Level: log.LevelInfo,
+	}))
+
+	initLogger.Info("See-User service initiating")
 
 	err := parser.ConfigParser(CONFIG_FILE_PATH, &appConfig)
 	if err != nil {
-		log.Error("failed to parse the configuration", "Err", err)
+		initLogger.Error("failed to parse the configuration", "Err", err)
 		return
 	}
-	log.Info("config parser loaded")
+	initLogger.Info("config parser loaded")
 
 	logger, err = wasshylogger.NewLogger(appConfig.LogLevel)
 	if err != nil {
-		log.Error("failed to parse the configuration", "Err", err)
+		initLogger.Error("failed to parse the configuration", "Err", err)
 		return
 	}
-	log.Info("logger lodded")
+	initLogger.Info("logger lodded")
 }
 
 func main() {
