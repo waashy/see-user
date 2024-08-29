@@ -2,10 +2,12 @@ package main
 
 import (
 	log "log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/waashy/utils/config/parser"
 	database "github.com/waashy/utils/database"
-	dbConfig "github.com/waashy/utils/database/config"
 	wasshylogger "github.com/waashy/utils/logger"
 
 	config "github.com/waashy/see-user/app/model/config"
@@ -25,14 +27,14 @@ func init() {
 
 	err := parser.ConfigParser(CONFIG_FILE_PATH, &appConfig)
 	if err != nil {
-		log.Error("Failed to parse the configuration", "Err", err)
+		log.Error("failed to parse the configuration", "Err", err)
 		return
 	}
 	log.Info("config parser loaded")
 
 	logger, err = wasshylogger.NewLogger(appConfig.LogLevel)
 	if err != nil {
-		log.Error("Failed to parse the configuration", "Err", err)
+		log.Error("failed to parse the configuration", "Err", err)
 		return
 	}
 	log.Info("logger lodded")
@@ -42,13 +44,13 @@ func main() {
 
 	logger.Info("See-User service Starting")
 	/////////////////////////////// DATABASE INITIATION ///////////////////////////////
-	logger.Info("Establishing database connection")
-	db, err := database.NewDatabase(dbConfig.DBConfig{})
+	logger.Info("establishing database connection")
+	db, err := database.NewDatabase(appConfig.DBConfig)
 	if err != nil {
 		logger.Error("initiating database failed", "ERR", err)
 		return
 	}
-	logger.Info("Database connection established")
+	logger.Info("database connection established")
 
 	///////////////////////////////////// USER ////////////////////////////////////////
 	/////////////////////////////// USER DAO INITIATION ///////////////////////////////
@@ -70,9 +72,27 @@ func main() {
 	logger.Info("initiated user service")
 
 	/////////////////////////////// START PROCESSES ///////////////////////////////
+	logger.Info("started user service processes")
 	if err := userService.Start(); err != nil {
-		logger.Info("failed to start user service processes")
+		logger.Error("failed to start user service processes", "ERR", err)
 		return
 	}
+	logger.Info("started user service processes")
 
+	/////////////////////////////////////// HOLD //////////////////////////////////////////
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	logger.Info("application start up completed", "stop procedure", "press ^C to stop the application")
+	receivedStopSignal := <-quit
+	logger.Info("recieved stop signal", "stop signal", receivedStopSignal)
+
+	/////////////////////////////// STOP PROCESSES ///////////////////////////////
+	logger.Info("stopping all sub-processes")
+	if err := userService.Stop(); err != nil {
+		logger.Error("failed to stop user service processes", "ERR", err)
+		return
+	}
+	logger.Info("all sub-processes succesfully stopped")
+
+	logger.Info("application succesfully stopped")
 }
