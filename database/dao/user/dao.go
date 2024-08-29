@@ -12,16 +12,16 @@ type userDao struct {
 }
 
 type UserDao interface {
-	Create()
-	Get()
-	List()
-	Update()
-	Delete()
+	Create() error
+	Get() error
+	List() error
+	Update() error
+	Delete() error
 }
 
-func NewUserDao(db *database.Database, logger *log.Logger) (UserDao, error) {
+func init() {}
 
-	// auto migrate user
+func NewUserDao(db *database.Database, logger *log.Logger) (UserDao, error) {
 
 	if err := db.Instance.AutoMigrate(&User{}); err != nil {
 		return nil, err
@@ -36,12 +36,12 @@ func NewUserDao(db *database.Database, logger *log.Logger) (UserDao, error) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// IMPLEMENTATIONS //////////////////////////////////////////////
 
-func (ud *userDao) Create() {}
+func (ud *userDao) Create() error { return nil }
 
-func (ud *userDao) Get() {}
+func (ud *userDao) Get() error { return nil }
 
-func (ud *userDao) List() {}
+func (ud *userDao) List() error { return nil }
 
-func (ud *userDao) Update() {}
+func (ud *userDao) Update() error { return nil }
 
-func (ud *userDao) Delete() {}
+func (ud *userDao) Delete() error { return nil }

@@ -22,6 +22,8 @@ type UserService interface {
 	Delete() error
 }
 
+func init() {}
+
 func NewUserService(us userdao.UserDao, logger *log.Logger) (UserService, error) {
 	return &userService{
 		dao:    us,
@@ -39,12 +41,12 @@ func (us *userService) Stop() error { return nil }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// IMPLEMENTATIONS //////////////////////////////////////////////
 
-func (us *userService) Create() error { return nil }
+func (us *userService) Create() error { return us.dao.Create() }
 
-func (us *userService) Get() error { return nil }
+func (us *userService) Get() error { return us.dao.Get() }
 
-func (us *userService) List() error { return nil }
+func (us *userService) List() error { return us.dao.List() }
 
-func (us *userService) Update() error { return nil }
+func (us *userService) Update() error { return us.dao.Update() }
 
-func (us *userService) Delete() error { return nil }
+func (us *userService) Delete() error { return us.dao.Delete() }
