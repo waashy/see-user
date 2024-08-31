@@ -10,6 +10,8 @@ import (
 	database "github.com/waashy/utils/database"
 	wasshylogger "github.com/waashy/utils/logger"
 
+	health "github.com/waashy/see-user/api/handler/health"
+	server "github.com/waashy/see-user/api/server"
 	config "github.com/waashy/see-user/app/model/config"
 	userdao "github.com/waashy/see-user/database/dao/user"
 	userservice "github.com/waashy/see-user/service/user"
@@ -51,7 +53,7 @@ func main() {
 
 	/////////////////////////////// DATABASE INITIATION ///////////////////////////////
 	logger.Info("establishing database connection")
-	db, err := database.NewDatabase(appConfig.DBConfig)
+	db, err := database.NewDatabase(*appConfig.DBConfig)
 	if err != nil {
 		logger.Error("initiating database failed", "ERR", err)
 		return
@@ -80,6 +82,7 @@ func main() {
 	logger.Info("initiated user service")
 
 	/////////////////////////////// START PROCESSES ///////////////////////////////
+
 	logger.Info("started user service processes")
 	if err := userService.Start(); err != nil {
 		logger.Error("failed to start user service processes", "ERR", err)
@@ -87,23 +90,42 @@ func main() {
 	}
 	logger.Info("started user service processes")
 
-	///////////////////////////////////// APIS ////////////////////////////////////////
+	///////////////////////////////////// HANDLERS ////////////////////////////////////////
 
-	///////////////////////////////////// USER ////////////////////////////////////////
+	healthHandler := health.NewHealthCheckHandler()
+
+	handlers := []*server.ServerHandlerMap{
+		server.AddServerHandler("api/v1/health/", healthHandler),
+	}
+
+	///////////////////////////////////// SERVER ////////////////////////////////////////
+	app := server.NewFiberApplication(logger)
+
+	server := server.NewServer(appConfig.Server, app, handlers, logger)
+	gracefulServerQuit := server.StartServer()
 
 	//////////////////////////////// APPLICATION HOLD ///////////////////////////////////
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	logger.Info("application start up completed", "stop procedure", "press ^C to stop the application")
-	receivedStopSignal := <-quit
-	logger.Info("recieved stop signal", "stop signal", receivedStopSignal)
 
-	/////////////////////////////////// STOP PROCESSES /////////////////////////////////////
+	select {
+	case receivedStopSignal := <-quit:
+		logger.Info("recieved stop signal", "stop signal", receivedStopSignal)
+	case receivedStopSignal := <-gracefulServerQuit:
+		logger.Info("recieved stop signal", "stop signal", receivedStopSignal)
+	}
+
+	/////////////////////////////////// STOP SUBPROCESSES /////////////////////////////////////
+
+	server.ShutdownGracefully()
+
 	logger.Info("stopping all sub-processes")
 	if err := userService.Stop(); err != nil {
 		logger.Error("failed to stop user service processes", "ERR", err)
 		return
 	}
+
 	logger.Info("all sub-processes succesfully stopped")
 
 	logger.Info("application succesfully stopped")
