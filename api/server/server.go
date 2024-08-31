@@ -86,7 +86,7 @@ func NewFiberApplication(appLogger *log.Logger) *fiber.App {
 	return app
 }
 
-func (s *Server) ShutdownGracefully() {
+func (s *Server) ShutdownGracefully(appLogger *log.Logger) {
 	timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
 	defer func() {
@@ -98,12 +98,12 @@ func (s *Server) ShutdownGracefully() {
 
 	select {
 	case <-timeout.Done():
-		log.Error("Server Shutdown Timed out before shutdown.")
+		appLogger.Error("Server Shutdown Timed out before shutdown.")
 	case err := <-shutdownChan:
 		if err != nil {
-			log.Error("Error while shutting down server", "ERR", err)
+			appLogger.Error("Error while shutting down server", "ERR", err)
 		} else {
-			log.Info("Server Shutdown Successful")
+			appLogger.Info("Server Shutdown Successful")
 		}
 	}
 }

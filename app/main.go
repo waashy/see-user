@@ -121,7 +121,7 @@ func main() {
 
 	/////////////////////////////////// STOP SUBPROCESSES /////////////////////////////////////
 
-	server.ShutdownGracefully()
+	server.ShutdownGracefully(logger)
 
 	logger.Info("stopping all sub-processes")
 	if err := userService.Stop(); err != nil {
