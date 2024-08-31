@@ -10,7 +10,8 @@ import (
 	database "github.com/waashy/utils/database"
 	wasshylogger "github.com/waashy/utils/logger"
 
-	health "github.com/waashy/see-user/api/handler/health"
+	healthHdlr "github.com/waashy/see-user/api/handler/health"
+	userHdlr "github.com/waashy/see-user/api/handler/user"
 	server "github.com/waashy/see-user/api/server"
 	config "github.com/waashy/see-user/app/model/config"
 	userdao "github.com/waashy/see-user/database/dao/user"
@@ -92,10 +93,12 @@ func main() {
 
 	///////////////////////////////////// HANDLERS ////////////////////////////////////////
 
-	healthHandler := health.NewHealthCheckHandler()
+	healthHandler := healthHdlr.NewHealthCheckHandler()
+	userHandler := userHdlr.NewUserHandler(userService)
 
 	handlers := []*server.ServerHandlerMap{
 		server.AddServerHandler("api/v1/health/", healthHandler),
+		server.AddServerHandler("api/v1/user/", userHandler),
 	}
 
 	///////////////////////////////////// SERVER ////////////////////////////////////////

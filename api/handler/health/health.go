@@ -2,19 +2,19 @@ package healthcheck
 
 import "github.com/gofiber/fiber/v2"
 
-type HealthCheckhandler struct {
+type HealthHandler struct {
 }
 
-func (h *HealthCheckhandler) HealthCheck(c *fiber.Ctx) error {
+func (h *HealthHandler) HealthCheck(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"msg": "Service up and running.",
 	})
 }
 
-func (h *HealthCheckhandler) RegisterRoutes(router fiber.Router) {
+func (h *HealthHandler) RegisterRoutes(router fiber.Router) {
 	router.Get("/", h.HealthCheck)
 }
 
-func NewHealthCheckHandler() *HealthCheckhandler {
-	return &HealthCheckhandler{}
+func NewHealthCheckHandler() *HealthHandler {
+	return &HealthHandler{}
 }

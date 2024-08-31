@@ -41,7 +41,10 @@ func (us *userService) Stop() error { return nil }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// IMPLEMENTATIONS //////////////////////////////////////////////
 
-func (us *userService) Create() error { return us.dao.Create() }
+func (us *userService) Create() error {
+	us.logger.Info("creating user")
+	return us.dao.Create()
+}
 
 func (us *userService) Get() error { return us.dao.Get() }
 
